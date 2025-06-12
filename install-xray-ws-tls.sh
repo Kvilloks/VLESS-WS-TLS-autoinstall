@@ -50,24 +50,7 @@ generate_selfsigned_cert() {
 
 # Создание конфига Xray для VLESS+WebSocket+TLS
 create_config() {
-    SERVER_IP=$(get_public_ip)
-    # Получаем список старых клиентов, если конфиг уже есть
-    if [ -f "$XRAY_CONFIG" ]; then
-        OLD_CLIENTS=$(jq '.inbounds[0].settings.clients' "$XRAY_CONFIG")
-    else
-        OLD_CLIENTS="[]"
-    fi
-
-    # Новый клиент
-    NEW_CLIENT=$(jq -n --arg uuid "$UUID" '{id: $uuid, level: 0, email: "user@xray"}')
-
-    # Если такого UUID ещё нет, добавляем его
-    if echo "$OLD_CLIENTS" | jq --arg uuid "$UUID" 'map(select(.id == $uuid)) | length' | grep -q 0; then
-        ALL_CLIENTS=$(echo "$OLD_CLIENTS" | jq --argjson new "$NEW_CLIENT" '. + [$new]')
-    else
-        ALL_CLIENTS=$OLD_CLIENTS
-    fi
-
+    UUIDS=("$@") # Передавать UUID через аргументы функции: create_config uuid1 uuid2 ...
     cat > "$XRAY_CONFIG" <<EOF
 {
   "log": {
@@ -79,7 +62,17 @@ create_config() {
     "port": $PORT,
     "protocol": "vless",
     "settings": {
-      "clients": $ALL_CLIENTS,
+      "clients": [
+$(for uuid in "${UUIDS[@]}"; do
+cat <<EOC
+        {
+          "id": "$uuid",
+          "level": 0,
+          "email": "user@xray"
+        },
+EOC
+done | sed '$ s/,$//')
+      ],
       "decryption": "none"
     },
     "streamSettings": {

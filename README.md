@@ -1,21 +1,11 @@
-## VLESS WebSocket+TLS (без домена, самоподписанный сертификат)
-
 ### Автоустановка
 
 ```bash
-wget https://github.com/Kvilloks/xray-vless-WebSocket-TLS-autoinstall/raw/main/install-xray-ws-tls.sh
-chmod +x install-xray-ws-tls.sh
-sudo ./install-xray-ws-tls.sh
+curl -fsSL https://raw.githubusercontent.com/Kvilloks/xray-vless-WebSocket-TLS-autoinstall/main/install-xray-ws-tls.sh -o /tmp/install-xray-ws-tls.sh
+dos2unix /tmp/install-xray-ws-tls.sh 2>/dev/null || sed -i 's/\r$//' /tmp/install-xray-ws-tls.sh
+chmod +x /tmp/install-xray-ws-tls.sh
+sudo bash /tmp/install-xray-ws-tls.sh
 ```
-
-### Краткая информация
-
-- **VLESS WebSocket+TLS**
-- **Без домена (по IP)**
-- **Самоподписанный сертификат**
-- **allowInsecure=1 автоматически в ссылке**
-- **WebSocket Path:** `/ws`
-- **Порт:** `443` (по умолчанию)
 
 ### Пример VLESS-ссылки
 

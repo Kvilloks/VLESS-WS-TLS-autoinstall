@@ -50,8 +50,10 @@ generate_selfsigned_cert() {
 
 # Создание конфига Xray для VLESS+WebSocket+TLS
 create_config() {
-    UUIDS=("$@") # Передавать UUID через аргументы функции: create_config uuid1 uuid2 ...
-    cat > "$XRAY_CONFIG" <<EOF
+    NEW_UUID="$1"
+    # Если файла нет, создаём новый базовый конфиг с этим UUID
+    if [ ! -f "$XRAY_CONFIG" ]; then
+        cat > "$XRAY_CONFIG" <<EOF
 {
   "log": {
     "access": "/var/log/xray/access.log",
@@ -63,15 +65,11 @@ create_config() {
     "protocol": "vless",
     "settings": {
       "clients": [
-$(for uuid in "${UUIDS[@]}"; do
-cat <<EOC
         {
-          "id": "$uuid",
+          "id": "$NEW_UUID",
           "level": 0,
           "email": "user@xray"
-        },
-EOC
-done | sed '$ s/,$//')
+        }
       ],
       "decryption": "none"
     },
@@ -99,6 +97,17 @@ done | sed '$ s/,$//')
   ]
 }
 EOF
+    else
+        # Если файл есть, добавляем новый UUID только если его ещё нет
+        TMP_CONFIG=$(mktemp)
+        jq --arg uuid "$NEW_UUID" '
+        .inbounds[0].settings.clients +=
+        (if [.inbounds[0].settings.clients[].id | select(. == $uuid)] | length == 0
+         then [{"id": $uuid, "level": 0, "email": "user@xray"}]
+         else []
+         end)
+        ' "$XRAY_CONFIG" > "$TMP_CONFIG" && mv "$TMP_CONFIG" "$XRAY_CONFIG"
+    fi
 }
 
 # Создание systemd-сервиса для автозапуска Xray при загрузке сервера
@@ -150,7 +159,7 @@ main() {
     install_xray
     generate_selfsigned_cert
     setup_service
-    create_config
+    create_config "$UUID"
     mkdir -p /var/log/xray
     restart_xray
     generate_qr

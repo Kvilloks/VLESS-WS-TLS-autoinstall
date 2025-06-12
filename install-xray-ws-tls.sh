@@ -124,10 +124,10 @@ restart_xray() {
     systemctl restart xray
 }
 
-# Генерация VLESS ссылки для клиента
+# Генерация VLESS ссылки для клиента — с allowInsecure=1
 generate_vless_link() {
     SERVER_IP=$(get_public_ip)
-    echo "vless://$UUID@$SERVER_IP:$PORT?encryption=none&security=tls&type=ws&host=$SERVER_IP&path=%2Fws#VLESS-WS-TLS"
+    echo "vless://$UUID@$SERVER_IP:$PORT?encryption=none&security=tls&type=ws&host=$SERVER_IP&path=%2Fws&allowInsecure=1#VLESS-WS-TLS"
 }
 
 # QR-код
@@ -138,7 +138,7 @@ generate_qr() {
     fi
     echo "VLESS ссылка:"
     echo "$VLESS_LINK"
-    echo "ВНИМАНИЕ: TLS сертификат самоподписанный! В клиенте нужно отключить проверку сертификата (allowInsecure = true)"
+    echo "ВНИМАНИЕ: TLS сертификат самоподписанный! В клиенте нужно отключить проверку сертификата (allowInsecure = 1)"
 }
 
 main() {

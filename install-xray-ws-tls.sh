@@ -147,6 +147,7 @@ main() {
     generate_selfsigned_cert
     setup_service
     create_config
+    mkdir -p /var/log/xray
     restart_xray
     generate_qr
 }

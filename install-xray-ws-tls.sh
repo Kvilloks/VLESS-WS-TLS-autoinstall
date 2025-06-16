@@ -103,7 +103,7 @@ EOF
         jq --arg uuid "$NEW_UUID" '
         .inbounds[0].settings.clients +=
         (if [.inbounds[0].settings.clients[].id | select(. == $uuid)] | length == 0
-         then [{"id": $uuid, "level": 0, "email": "user@xray"}]
+         then [{"id": $uuid, "level": 0, "email": ($uuid + "@xray")}]
          else []
          end)
         ' "$XRAY_CONFIG" > "$TMP_CONFIG" && mv "$TMP_CONFIG" "$XRAY_CONFIG"

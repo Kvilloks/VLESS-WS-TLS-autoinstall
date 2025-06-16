@@ -134,7 +134,13 @@ EOF
 # Перезапуск службы Xray
 restart_xray() {
     systemctl daemon-reload
-    systemctl restart xray
+    if systemctl restart xray; then
+        echo "Xray успешно перезапущен."
+    else
+        echo "Ошибка: не удалось перезапустить Xray!"
+        systemctl status xray --no-pager
+        exit 1
+    fi
 }
 
 # Генерация VLESS ссылки для клиента — с allowInsecure=1

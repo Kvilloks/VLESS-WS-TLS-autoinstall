@@ -22,7 +22,15 @@ This repository provides an automated installation script for the VLESS protocol
 - Automatically sets up firewall rules and required dependencies
 - Generates client configuration for instant use
 
-### Usage
+### Quick Installation
+
+Run this command as root (or with sudo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Kvilloks/xray-vless-WebSocket-TLS-autoinstall/main/install-xray-ws-tls.sh -o /tmp/install-xray-ws-tls.sh && dos2unix /tmp/install-xray-ws-tls.sh 2>/dev/null || sed -i 's/\r$//' /tmp/install-xray-ws-tls.sh && chmod +x /tmp/install-xray-ws-tls.sh && bash /tmp/install-xray-ws-tls.sh
+```
+
+### Manual Usage
 
 1. Clone or download the script from this repository.
 2. Give execution permission:
@@ -59,7 +67,15 @@ Use this script at your own risk. Make sure to comply with your local laws and r
 - Автоматическая настройка firewall и всех необходимых зависимостей
 - Генерация клиентской конфигурации для мгновенного использования
 
-### Использование
+### Быстрая установка
+
+Запустите эту команду от root (или через sudo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Kvilloks/xray-vless-WebSocket-TLS-autoinstall/main/install-xray-ws-tls.sh -o /tmp/install-xray-ws-tls.sh && dos2unix /tmp/install-xray-ws-tls.sh 2>/dev/null || sed -i 's/\r$//' /tmp/install-xray-ws-tls.sh && chmod +x /tmp/install-xray-ws-tls.sh && bash /tmp/install-xray-ws-tls.sh
+```
+
+### Ручное использование
 
 1. Клонируйте или скачайте скрипт из этого репозитория.
 2. Дайте права на выполнение:

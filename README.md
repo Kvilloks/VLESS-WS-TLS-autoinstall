@@ -93,23 +93,51 @@ curl -fsSL https://raw.githubusercontent.com/Kvilloks/xray-vless-WebSocket-TLS-a
 - Чистая установка Linux (рекомендуется: Debian/Ubuntu)
 - Root-права
 - Открытые необходимые порты (по умолчанию: 443 для TLS)
-### Примичания
-1. Комманда для автозапуска с приоритетом при включении ПК V2rayN - schtasks /create /tn "v2rayN" /tr "C:\Users\Administrator\Desktop\v2rayN-windows-64\v2rayN.exe" /sc onlogon /rl highest /f
-2. Если после применения использования VLESS WS+TLS начинают тупить страницы(долго грузится), нужно понизить MTU до 1400:
-   ```nano /etc/network/interfaces.d/ens1
-   ```
-   Вставляем туда:
-   ```auto ens1
-iface ens1 inet dhcp
-    mtu 1400
+## Примечания по настройке автозапуска V2rayN и MTU для VLESS WS+TLS
+
+### 1. Автозапуск V2rayN с максимальным приоритетом (Windows)
+Для автоматического запуска V2rayN с максимальными правами при входе в систему выполните в командной строке (от имени администратора):
+
+```
+schtasks /create /tn "v2rayN" /tr "C:\Users\Administrator\Desktop\v2rayN-windows-64\v2rayN.exe" /sc onlogon /rl highest /f
+```
+
+---
+
+### 2. Решение проблемы с долгой загрузкой страниц (MTU для VLESS WS+TLS на сервере)
+
+Если после подключения через VLESS WS+TLS страницы долго грузятся или "тупят", нужно понизить MTU до 1400.
+
+#### Как это сделать на сервере (Debian/Ubuntu):
+
+1. Откройте файл интерфейса (например, для `ens1`):
+
     ```
-   Применяем:
-   ```ifdown ens1 && ifup ens1
-   ```
-   Смотрим:
-   ```ip link show ens1
-   ```
-В строке должно быть mtu 1400
-ens1 поменять на свой сетевой порт.
+    sudo nano /etc/network/interfaces.d/ens1
+    ```
+
+2. Вставьте или отредактируйте содержимое так:
+    ```
+    auto ens1
+    iface ens1 inet dhcp
+        mtu 1400
+    ```
+   > *Замените `ens1` на имя вашего сетевого интерфейса, если оно отличается (узнать можно командой `ip a`).*
+
+3. Примените изменения:
+    ```
+    sudo ifdown ens1 && sudo ifup ens1
+    ```
+    > **Внимание:** если вы работаете по SSH, лучше использовать только `sudo ifup ens1` или перезагрузить сервер, чтобы не потерять соединение.
+
+4. Проверьте, что MTU применился:
+    ```
+    ip link show ens1
+    ```
+    В выводе должно быть: `mtu 1400`
+
+---
+
+
 
 

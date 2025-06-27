@@ -161,7 +161,7 @@ generate_qr() {
 }
 
 # --- MTU AUTO-CONFIGURATION BLOCK ---
-set_mtu_1400() {
+set_mtu_1380() {
     # Проверка альтернативных систем конфигурации сети
     if [ -d /etc/netplan ] && ls /etc/netplan/*.yaml >/dev/null 2>&1; then
         echo "[!] Netplan обнаружен в системе (/etc/netplan) — автоматическая настройка MTU не выполнена."
@@ -198,25 +198,25 @@ set_mtu_1400() {
 
     echo "[+] Обнаружен основной интерфейс: $IFACE"
     # Применить MTU немедленно
-    ip link set dev $IFACE mtu 1400 || echo "[!] Не удалось установить MTU 1400 через ip link set."
+    ip link set dev $IFACE mtu 1380 || echo "[!] Не удалось установить MTU 1380 через ip link set."
 
-    # Записать в /etc/network/interfaces.d/ только если ещё не прописан mtu 1400
+    # Записать в /etc/network/interfaces.d/ только если ещё не прописан mtu 1380
     IF_CFG="/etc/network/interfaces.d/$IFACE"
-    if grep -q "mtu 1400" "$IF_CFG" 2>/dev/null; then
-        echo "[=] MTU 1400 уже прописан в $IF_CFG, ничего менять не нужно."
+    if grep -q "mtu 1380" "$IF_CFG" 2>/dev/null; then
+        echo "[=] MTU 1380 уже прописан в $IF_CFG, ничего менять не нужно."
     else
         if [ -w /etc/network/interfaces.d ]; then
             cat <<EOF > "$IF_CFG"
 auto $IFACE
 iface $IFACE inet dhcp
-    mtu 1400
+    mtu 1380
 EOF
-            echo "[+] MTU 1400 прописан в $IF_CFG"
+            echo "[+] MTU 1380 прописан в $IF_CFG"
         else
             echo "[!] Нет прав на запись в /etc/network/interfaces.d, пропишите вручную:"
             echo "auto $IFACE"
             echo "iface $IFACE inet dhcp"
-            echo "    mtu 1400"
+            echo "    mtu 1380"
         fi
     fi
 
@@ -229,7 +229,7 @@ main() {
     install_xray
     generate_selfsigned_cert
     setup_service
-    set_mtu_1400
+    set_mtu_1380
     create_config "$UUID"
     mkdir -p /var/log/xray
     restart_xray

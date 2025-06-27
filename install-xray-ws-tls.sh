@@ -160,11 +160,72 @@ generate_qr() {
     echo "ВНИМАНИЕ: TLS сертификат самоподписанный! В клиенте нужно отключить проверку сертификата (allowInsecure = 1)"
 }
 
+# --- MTU AUTO-CONFIGURATION BLOCK ---
+set_mtu_1400() {
+    # Проверка альтернативных систем конфигурации сети
+    if [ -d /etc/netplan ] && ls /etc/netplan/*.yaml >/dev/null 2>&1; then
+        echo "[!] Netplan обнаружен в системе (/etc/netplan) — автоматическая настройка MTU не выполнена."
+        echo "    Измените MTU вручную в yaml-файле Netplan."
+        return
+    fi
+    if [ -d /etc/systemd/network ] && ls /etc/systemd/network/*.network >/dev/null 2>&1; then
+        echo "[!] systemd-networkd обнаружен (/etc/systemd/network) — автоматическая настройка MTU не выполнена."
+        echo "    Измените MTU вручную в соответствующем .network-файле."
+        return
+    fi
+    if pgrep -x NetworkManager >/dev/null 2>&1; then
+        echo "[!] NetworkManager активен — автоматическая настройка MTU не выполнена."
+        echo "    Используйте nmcli или nmtui для изменения MTU."
+        return
+    fi
+    if ls /etc/cloud/cloud.cfg* >/dev/null 2>&1; then
+        echo "[!] Обнаружен cloud-init. Cloud-init может перезаписать сетевые настройки после перезагрузки!"
+        echo "    Рекомендуется изменить MTU через cloud-init или отключить его управление сетью."
+    fi
+    # Проверка на явную запись в /etc/network/interfaces
+    if grep -E "iface .+ inet" /etc/network/interfaces | grep -v "source" >/dev/null 2>&1; then
+        echo "[!] В /etc/network/interfaces есть ручная настройка интерфейса!"
+        echo "    Проверьте этот файл вручную, автоматическая настройка MTU не выполнена."
+        return
+    fi
+
+    # Определение основного интерфейса
+    IFACE=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="dev") print $(i+1); exit}')
+    if [ -z "$IFACE" ]; then
+        echo "[!] Не удалось определить основной сетевой интерфейс для MTU."
+        return
+    fi
+
+    echo "[+] Обнаружен основной интерфейс: $IFACE"
+    # Применить MTU немедленно
+    ip link set dev $IFACE mtu 1400 || echo "[!] Не удалось установить MTU 1400 через ip link set."
+
+    # Записать в /etc/network/interfaces.d/
+    IF_CFG="/etc/network/interfaces.d/$IFACE"
+    if [ -w /etc/network/interfaces.d ]; then
+        cat <<EOF > "$IF_CFG"
+auto $IFACE
+iface $IFACE inet dhcp
+    mtu 1400
+EOF
+        echo "[+] MTU 1400 прописан в $IF_CFG"
+    else
+        echo "[!] Нет прав на запись в /etc/network/interfaces.d, пропишите вручную:"
+        echo "auto $IFACE"
+        echo "iface $IFACE inet dhcp"
+        echo "    mtu 1400"
+    fi
+
+    ip link show $IFACE | grep mtu
+}
+# --- END MTU AUTO-CONFIGURATION BLOCK ---
+
 main() {
     install_dependencies
     install_xray
     generate_selfsigned_cert
     setup_service
+    set_mtu_1400
     create_config "$UUID"
     mkdir -p /var/log/xray
     restart_xray

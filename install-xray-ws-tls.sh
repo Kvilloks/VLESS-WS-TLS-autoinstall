@@ -200,20 +200,24 @@ set_mtu_1400() {
     # Применить MTU немедленно
     ip link set dev $IFACE mtu 1400 || echo "[!] Не удалось установить MTU 1400 через ip link set."
 
-    # Записать в /etc/network/interfaces.d/
+    # Записать в /etc/network/interfaces.d/ только если ещё не прописан mtu 1400
     IF_CFG="/etc/network/interfaces.d/$IFACE"
-    if [ -w /etc/network/interfaces.d ]; then
-        cat <<EOF > "$IF_CFG"
+    if grep -q "mtu 1400" "$IF_CFG" 2>/dev/null; then
+        echo "[=] MTU 1400 уже прописан в $IF_CFG, ничего менять не нужно."
+    else
+        if [ -w /etc/network/interfaces.d ]; then
+            cat <<EOF > "$IF_CFG"
 auto $IFACE
 iface $IFACE inet dhcp
     mtu 1400
 EOF
-        echo "[+] MTU 1400 прописан в $IF_CFG"
-    else
-        echo "[!] Нет прав на запись в /etc/network/interfaces.d, пропишите вручную:"
-        echo "auto $IFACE"
-        echo "iface $IFACE inet dhcp"
-        echo "    mtu 1400"
+            echo "[+] MTU 1400 прописан в $IF_CFG"
+        else
+            echo "[!] Нет прав на запись в /etc/network/interfaces.d, пропишите вручную:"
+            echo "auto $IFACE"
+            echo "iface $IFACE inet dhcp"
+            echo "    mtu 1400"
+        fi
     fi
 
     ip link show $IFACE | grep mtu

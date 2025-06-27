@@ -96,16 +96,19 @@ curl -fsSL https://raw.githubusercontent.com/Kvilloks/xray-vless-WebSocket-TLS-a
 ### Примичания
 1. Комманда для автозапуска с приоритетом при включении ПК V2rayN - schtasks /create /tn "v2rayN" /tr "C:\Users\Administrator\Desktop\v2rayN-windows-64\v2rayN.exe" /sc onlogon /rl highest /f
 2. Если после применения использования VLESS WS+TLS начинают тупить страницы(долго грузится), нужно понизить MTU до 1400:
-   ```nano /etc/network/interfaces.d/ens1```
+   ```nano /etc/network/interfaces.d/ens1
+   ```
    Вставляем туда:
    ```auto ens1
 iface ens1 inet dhcp
     mtu 1400
     ```
    Применяем:
-   ```ifdown ens1 && ifup ens1```
+   ```ifdown ens1 && ifup ens1
+   ```
    Смотрим:
-   ```ip link show ens1```
+   ```ip link show ens1
+   ```
 В строке должно быть mtu 1400
 ens1 поменять на свой сетевой порт.
 
